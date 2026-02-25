@@ -9,6 +9,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    outputs:
+      tag: ${{ steps.vars.outputs.TAG }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -43,3 +46,21 @@ jobs:
           tags: |
             deepakm06/frontend:${{ steps.vars.outputs.TAG }}
             deepakm06/frontend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/food-app
+            docker compose pull
+            docker compose down
+            docker compose up -d
+            docker image prune -f
