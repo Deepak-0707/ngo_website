@@ -47,7 +47,7 @@ jobs:
             deepakm06/frontend:${{ steps.vars.outputs.TAG }}
             deepakm06/frontend:latest
 
-  deploy:
+    deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/food-app
+            cd /home/ubuntu/ngo
             docker compose pull
             docker compose down
             docker compose up -d
