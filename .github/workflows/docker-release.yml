@@ -47,7 +47,7 @@ jobs:
             deepakm06/frontend:${{ steps.vars.outputs.TAG }}
             deepakm06/frontend:latest
 
-    deploy:
+  deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
