@@ -1,6 +1,19 @@
 # 🌿 FoodBridge — Food Waste Reduction Platform
 
-A production-ready full-stack platform connecting **Event Organizers** with **NGOs** to reduce food waste. Organizers list surplus food from events; NGOs browse and claim it for community distribution.
+A production-ready full-stack web application that connects **Event Organizers** with **NGOs** to reduce food waste. Organizers list surplus food from events; NGOs browse and claim it for community distribution.
+
+> DevOps-enabled full-stack application deployed on AWS using Docker and GitHub Actions CI/CD with automated version-based container releases.
+
+---
+
+## 🚀 Tech Stack
+
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | React 18, Vite, Tailwind CSS, Axios, React Router v6 |
+| **Backend** | Node.js, Express.js, JWT, bcryptjs, express-validator |
+| **Database** | MongoDB 7 (Docker), Mongoose ODM |
+| **DevOps & Cloud** | Docker, Docker Compose, GitHub Actions, AWS EC2 (Ubuntu) |
 
 ---
 
@@ -18,93 +31,43 @@ A production-ready full-stack platform connecting **Event Organizers** with **NG
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Tech Stack:**
-- **Frontend:** React 18, Vite, Tailwind CSS, Axios, React Router v6
-- **Backend:** Node.js, Express.js, JWT, bcryptjs, express-validator
-- **Database:** MongoDB 7 (Docker), Mongoose ODM
-- **Infra:** Docker Compose, Nginx (frontend serving)
-
----
-
-## 📁 Project Structure
-
+**CI/CD Flow:**
 ```
-food-waste-platform/
-├── docker-compose.yml
-├── backend/
-│   ├── Dockerfile
-│   ├── .env.example
-│   ├── package.json
-│   └── src/
-│       ├── app.js                  # Express app setup
-│       ├── server.js               # Entry point
-│       ├── config/
-│       │   └── db.js               # MongoDB connection
-│       ├── models/
-│       │   ├── User.js
-│       │   ├── Event.js
-│       │   └── Booking.js
-│       ├── controllers/
-│       │   ├── authController.js
-│       │   ├── eventController.js
-│       │   ├── bookingController.js
-│       │   └── adminController.js
-│       ├── routes/
-│       │   ├── authRoutes.js
-│       │   ├── eventRoutes.js
-│       │   ├── bookingRoutes.js
-│       │   └── adminRoutes.js
-│       ├── middleware/
-│       │   ├── auth.js             # JWT protect + role authorize
-│       │   ├── errorHandler.js     # Centralized error handling
-│       │   └── validate.js         # express-validator runner
-│       └── utils/
-│           └── generateToken.js
-└── frontend/
-    ├── Dockerfile
-    ├── nginx.conf
-    ├── .env.example
-    ├── package.json
-    ├── vite.config.js
-    ├── tailwind.config.js
-    └── src/
-        ├── App.jsx
-        ├── main.jsx
-        ├── index.css
-        ├── api/
-        │   ├── axiosInstance.js    # Axios with JWT interceptor
-        │   ├── auth.js
-        │   ├── events.js
-        │   ├── bookings.js
-        │   └── admin.js
-        ├── context/
-        │   └── AuthContext.jsx     # Auth state management
-        ├── routes/
-        │   └── ProtectedRoute.jsx  # Role-aware guard
-        ├── components/
-        │   ├── Navbar.jsx
-        │   ├── EventCard.jsx
-        │   ├── EventForm.jsx
-        │   ├── Toast.jsx
-        │   └── LoadingSpinner.jsx
-        └── pages/
-            ├── Home.jsx
-            ├── Login.jsx
-            ├── Register.jsx
-            ├── Dashboard.jsx
-            ├── CreateEvent.jsx
-            ├── MyEvents.jsx
-            ├── BrowseEvents.jsx
-            ├── MyBookings.jsx
-            ├── AdminPages.jsx
-            └── NotFound.jsx
+Git Tag → GitHub Actions → Build Docker Images → Push to Docker Hub → SSH to EC2 → Pull Images → Restart Containers
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🔐 Core Features
 
-###  Docker Compose 
+**Authentication**
+- User registration as Organizer or NGO
+- Login with JWT
+- Protected routes and role-based authorization
+
+**Organizer**
+- Create, update, and delete events
+- View own events
+
+**NGO**
+- Browse available food events
+- Claim food (one claim per event)
+- View claimed bookings
+
+---
+
+
+## 🐳 Docker Setup
+
+All services are containerized and managed via Docker Compose. MongoDB runs with a persistent named volume (`mongo_data`), and the backend connects using the internal Docker hostname.
+
+| Service | Image | Port | Description |
+|---------|-------|------|-------------|
+| `mongo` | `mongo:7.0` | internal | MongoDB database |
+| `backend` | custom | `5000` | Express API server |
+| `frontend` | custom (Nginx) | `3000` | React SPA |
+
+**Run locally:**
 
 ```bash
 # Clone / navigate to the project
@@ -119,55 +82,64 @@ docker-compose up --build
 # Access the app:
 # Frontend: http://localhost:3000
 # Backend:  http://localhost:5000
-# API docs: http://localhost:5000/health
+# Health:   http://localhost:5000/health
 ```
 
-To run in background:
+**Run in background:**
+
 ```bash
 docker-compose up --build -d
 
-# View logs
-docker-compose logs -f
-
-# Stop everything
-docker-compose down
-
-# Stop and remove volumes (wipes MongoDB data)
-docker-compose down -v
+docker-compose logs -f       # View logs
+docker-compose down          # Stop everything
+docker-compose down -v       # Stop and wipe MongoDB data
 ```
 
+---
 
+## ☁️ AWS Deployment
 
-## 🌍 Environment Variables
+Deployed on an **AWS EC2 Ubuntu** instance.
 
-### Backend (`backend/.env`)
+**Steps performed:**
+1. Created EC2 instance and configured security groups
+2. Installed Docker and Docker Compose
+3. Cloned the project repository
+4. Configured `docker-compose.yml` with production environment variables
+5. Started containers in detached mode
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `5000` | Server port |
-| `MONGO_URI` | — | MongoDB connection string |
-| `JWT_SECRET` | — | JWT signing secret |
-| `JWT_EXPIRES_IN` | `7d` | Token expiry duration |
-| `NODE_ENV` | `development` | Environment mode |
-| `FRONTEND_URL` | `http://localhost:5173` | CORS origin |
+Application is accessible via the EC2 public IP.
 
-### Frontend (`frontend/.env`)
+---
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_API_BASE_URL` | `http://localhost:5000` | Backend base URL |
+## 🔄 CI/CD Pipeline
 
+GitHub Actions workflow triggers automatically on version tag push — no manual SSH required.
 
+**Trigger:**
 
-## 🐳 Docker Services
+```bash
+git tag v1.0.X
+git push origin v1.0.X
+```
 
-| Service | Image | Port | Description |
-|---------|-------|------|-------------|
-| `mongo` | `mongo:7.0` | internal | MongoDB database |
-| `backend` | custom | `5000` | Express API server |
-| `frontend` | custom (Nginx) | `3000` | React SPA |
+**Pipeline Stages:**
+1. Checkout repository
+2. Build Docker images
+3. Tag images with semantic version
+4. Push images to Docker Hub
+5. SSH into EC2
+6. Pull latest images
+7. Restart containers
 
-Data is persisted in a named Docker volume `mongo_data`.
+**Docker Hub Images:**
 
+```
+deepakm06/backend:v1.0.X
+deepakm06/frontend:v1.0.X
+deepakm06/backend:latest
+deepakm06/frontend:latest
+```
 
+---
 
